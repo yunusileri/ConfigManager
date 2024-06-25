@@ -1,0 +1,65 @@
+﻿services:
+  ConfigManager:
+    image: web-api
+    container_name: web-api
+    build:
+      context: .
+      dockerfile: ConfigManager.WebApi/Dockerfile
+    environment:
+      - ConnectionStrings__ConfigManager=User ID=postgres;Password=12QWaszx;Host=my_postgres;Port=5432;Database=ConfigManagerDB;Pooling=true;Connection Lifetime=0;
+      - Redis__Host=my_redis
+      - Rabbit__HostName=my_rabbitmq
+    ports:
+      - "5001:80"
+    depends_on:
+      Rabbit:
+        condition: service_healthy
+      Redis:
+        condition: service_started
+      Postgres:
+        condition: service_started
+    networks:
+      - configuration-manager-network
+  Redis:
+    image: redis:latest
+    container_name: my_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - RedisData:/data
+    networks:
+      - configuration-manager-network
+  Rabbit:
+    image: rabbitmq:management
+    container_name: my_rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - RabbitMQData:/var/lib/rabbitmq
+    networks:
+      - configuration-manager-network
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 1s
+      timeout: 3s
+      retries: 30
+  Postgres:
+    image: postgres:latest
+    container_name: my_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=12QWaszx
+    volumes:
+      - PgData:/var/lib/postgresql/data
+    networks:
+      - configuration-manager-network
+volumes:
+  RedisData:
+  RabbitMQData:
+  PgData:
+
+networks:
+  configuration-manager-network:
+    driver: bridge

@@ -1,6 +1,6 @@
 ﻿services:
-  ConfigManager:
-    image: web-api
+  WebApi:
+    image: config-manager-web-api
     container_name: web-api
     build:
       context: .
@@ -55,6 +55,20 @@
       - PgData:/var/lib/postgresql/data
     networks:
       - configuration-manager-network
+  WebUI:
+    image: config-manager-web-ui
+    container_name: web-ui
+    build:
+      context: .
+      dockerfile: ConfigManager.WebUI/Dockerfile
+    ports:
+      - "5002:3000"
+    depends_on:
+      WebApi:
+        condition: service_started
+    networks:
+      - configuration-manager-network
+    
 volumes:
   RedisData:
   RabbitMQData:

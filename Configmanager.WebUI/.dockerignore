@@ -1,0 +1,9 @@
+﻿node_modules
+.idea  
+.next
+.dockerignore
+.gitignore
+.DS_Store
+.git
+.env
+.env.docker
